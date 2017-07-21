@@ -1,0 +1,230 @@
+DECLARE
+	CURSOR C_CAN IS
+		SELECT CAN.*,
+			   NROOPC,
+			   CODCUR,
+			   CODTUR,
+			   OPCLIN,
+			   CODCAM,
+			   CODINSTITUICAO,
+			   INDPRINCIPAL,
+			   INDFORMACAOAMPLIADA,
+			   INDPROUNI,
+			   INDFIES
+		  FROM DBVESTIB.CANDIDATO CAN
+		 INNER JOIN DBVESTIB.RCANDCURTUROPC OPC
+			ON (OPC.CODCONC = CAN.CODCONC AND OPC.CODCAN = CAN.CODCAN AND OPC.NROOPC = '1')
+		 WHERE CAN.CODCONC = '3193'
+			   AND not  EXISTS (SELECT 1
+				  FROM DBVESTIB.OPCAOCANDIDATO OO
+				 WHERE OO.CODCONC = OPC.CODCONC
+					   AND OO.CODINSC = OPC.CODCAN
+					   AND OO.NROOPC = OPC.NROOPC)
+			   AND  EXISTS (SELECT 1
+				  FROM DBVESTIB.INSCRICAO I
+				 WHERE I.CODCONC = CAN.CODCONC
+					   AND I.CODINSC = CAN.CODCAN);
+                      -- and can.codcan= '375985';
+BEGIn
+	FOR R_INSCRICAO IN C_CAN LOOP
+		/*INSERT INTO DBVESTIB.INSCRICAO
+            (CODCONC,
+             CODINSC,
+             CODTIPDOC,
+             CODESTADO,
+             CODCIDADE,
+             CODTPODEF,
+             NOMCAN,
+             SEXCAN,
+             DATNASCAN,
+             NRODOC,
+             ENDCAN,
+             NUMERO,
+             COMPLEMENTO,
+             BAICAN,
+             CEPCAN,
+             TELCAN,
+             FLGCANHOTO,
+             EMAILCAN,
+             DATINSCAN,
+             IND_TREINANTE,
+             PAICAN,
+             MAECAN,
+             CELCAN,
+             CPFCAN,
+             ESCOLA_ORIGEM,
+             FORMA_INGRESSO,
+             COD_STATUS_INSCRICAO,
+             CODLOCPAG,
+             COD_LOC_INSCRICAO,
+             COD_FIS_INSCRICAO,
+             VALPAGO,
+             EMAIL_ALTERNATIVO,
+             COD_INSTIT_EXTERNA,
+             CODFORMAPROVA,
+             ANOENEM,
+             NUMINSCENEM,
+             DATPROVAAGENDADA,
+             CODESTADOCIVIL,
+             CODPAISNC,
+             CODCIDADENAT,
+             TELCOMERCIAL,
+             INDTRABALHA,
+             CODESCOLA,
+             LOGCAN,
+             SENCAN,
+             COD_GRD_CURRICULAR,
+             COD_GRD_QUALIFICACAO,
+             COD_OCORRENCIA,
+             COD_INSTITUICAO_PSVS,
+             CODCAMPROXRESIDENCIA,
+             COD_COR_RACA,
+             NOM_TEMA_PESQUISA,
+             DSC_TEMA_PESQUISA,
+             ANOCONCLUSAOGRAD,
+             ANOCONCLUSAOMEST,
+             COD_INSTIT_EXTERNA_MEST,
+             COD_IDIOMA)
+        VALUES
+            (R_INSCRICAO.CODCONC,
+             R_INSCRICAO.CODCAN,
+             '01',
+             406, -- a definir
+             4191, -- a definir
+             R_INSCRICAO.CODTPODEF,
+             R_INSCRICAO.NOMCAN,
+             R_INSCRICAO.SEXCAN,
+             R_INSCRICAO.DATNASCAN,
+             R_INSCRICAO.IDECAN,
+             NVL(R_INSCRICAO.ENDCAN,
+                 'XXXXX'),
+             NVL(R_INSCRICAO.NUMEND,
+                 0),
+             NVL(R_INSCRICAO.COMPLEMENTO,
+                 'XXXXX'),
+             NVL(R_INSCRICAO.BAICAN,
+                 'XXXXX'),
+             NVL(R_INSCRICAO.CEPCAN,
+                 '99999999'),
+             R_INSCRICAO.TELCAN,
+             R_INSCRICAO.CANHOTO,
+             R_INSCRICAO.EMAIL,
+             R_INSCRICAO.DATINSCAN,
+             R_INSCRICAO.IND_TREINANTE,
+             R_INSCRICAO.NOM_PAI,
+             R_INSCRICAO.NOM_MAE,
+             R_INSCRICAO.CELCAN,
+             R_INSCRICAO.CPFCAN,
+             R_INSCRICAO.ESCOLA_ORIGEM,
+             R_INSCRICAO.FORMA_INGRESSO,
+             2,
+             '001',
+             R_INSCRICAO.COD_LOC_INSCRICAO,
+             R_INSCRICAO.COD_FIS_INSCRICAO,
+             R_INSCRICAO.VALPAGO,
+             R_INSCRICAO.EMAIL_ALTERNATIVO,
+             R_INSCRICAO.COD_INSTIT_EXTERNA,
+             R_INSCRICAO.CODFORMAPROVA,
+             R_INSCRICAO.ANOENEM,
+             R_INSCRICAO.NUMINSCENEM,
+             R_INSCRICAO.DATPROVAAGENDADA,
+             R_INSCRICAO.CODESTADOCIVIL,
+             R_INSCRICAO.CODPAISNC,
+             R_INSCRICAO.CODCIDADENAT,
+             R_INSCRICAO.TELCOMERCIAL,
+             R_INSCRICAO.INDTRABALHA,
+             R_INSCRICAO.CODESCOLA,
+             'NAOINFORMADO',
+             'NAOINFORMADO',
+             R_INSCRICAO.COD_GRD_CURRICULAR,
+             R_INSCRICAO.COD_GRD_QUALIFICACAO,
+             R_INSCRICAO.COD_OCORRENCIA,
+             R_INSCRICAO.COD_INSTITUICAO_PSVS,
+             R_INSCRICAO.CODCAMPROXRESIDENCIA,
+             R_INSCRICAO.COD_COR_RACA,
+             R_INSCRICAO.NOM_TEMA_PESQUISA,
+             R_INSCRICAO.DSC_TEMA_PESQUISA,
+             R_INSCRICAO.ANOCONCLUSAOGRAD,
+             R_INSCRICAO.ANOCONCLUSAOMEST,
+             R_INSCRICAO.COD_INSTIT_EXTERNA_MEST,
+             R_INSCRICAO.COD_IDIOMA);
+        
+        -- inserindo registro de baixa
+        INSERT INTO DBVESTIB.REGISTRO_BAIXA
+            (CODCONC,
+             CODINSC,
+             COD_USUARIO,
+             DAT_BAIXA)
+        VALUES
+            (R_INSCRICAO.CODCONC,
+             R_INSCRICAO.CODCAN,
+             DBADM.F_BUSCA_USUARIO(USER),
+             SYSDATE);*/
+             /*
+		DELETE DBVESTIB.RCANDCURTUROPC R
+		 WHERE CODCONC = R_INSCRICAO.CODCONC
+			   AND CODCAN = R_INSCRICAO.CODCAN
+			   AND R.NROOPC = '1';
+	*/
+    
+   DBVESTIB.PC_CONCURSO_MUT_TBL.bAtualizaOpcaoCandidato := false; 
+		INSERT INTO DBVESTIB.OPCAOCANDIDATO
+			(CODCONC,
+			 CODINSC,
+			 NROOPC,
+			 CODCUR,
+			 CODTUR,
+			 OPCLIN,
+			 CODCAM,
+			 CODINSTITUICAO,
+			 INDPRINCIPAL,
+			 INDFORMACAOAMPLIADA,
+			 INDPROUNI,
+			 INDFIES)
+		VALUES
+			(R_INSCRICAO.CODCONC,
+			 R_INSCRICAO.CODCAN,
+			 R_INSCRICAO.NROOPC,
+			 R_INSCRICAO.CODCUR,
+			 R_INSCRICAO.CODTUR,
+			 R_INSCRICAO.OPCLIN,
+			 R_INSCRICAO.CODCAM,
+			 R_INSCRICAO.CODINSTITUICAO,
+			 R_INSCRICAO.INDPRINCIPAL,
+			 R_INSCRICAO.INDFORMACAOAMPLIADA,
+			 R_INSCRICAO.INDPROUNI,
+			 R_INSCRICAO.INDFIES);
+	
+		COMMIT;
+	END LOOP;
+END;
+/*
+
+
+	INSERT INTO DBVESTIB.OPCAOCANDIDATO
+			(CODCONC,
+			 CODINSC,
+			 NROOPC,
+			 CODCUR,
+			 CODTUR,
+			 OPCLIN,
+			 CODCAM,
+			 CODINSTITUICAO,
+			 INDPRINCIPAL,
+			 INDFORMACAOAMPLIADA,
+			 INDPROUNI,
+			 INDFIES)
+		VALUES
+			('3193',
+			'375985',
+			 '1',
+			'13',
+			'03',
+			0,
+			'63',
+			 '12',
+			'N',
+			 'N',
+			'N',
+			'N');
+	*/

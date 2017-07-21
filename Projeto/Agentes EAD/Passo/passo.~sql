@@ -1,0 +1,134 @@
+select * from dbvestib.passos_inscricao p
+where p.cod_tpo_concurso = 1 for update
+
+update
+dbvestib.passos_inscricao p
+set p.ord_passo =  p.ord_passo+ 1
+where p.cod_tpo_concurso = 1    
+and p.ord_passo >1;
+commit;
+
+insert into  dbvestib.passos_inscricao(cod_passo_inscricao,cod_tpo_concurso,end_tela,dsc_tela,ord_passo,cod_cnf_consulta,ind_exibir,dsc_funcao_before,dsc_funcao_after)
+values (dbvestib.passos_inscricao_s.nextval, 1, 'agente/index/index','Agente', 2 ,4511, 'S','agente.beforeNextStep', 'agente.afterLoadStep');
+commit;
+
+INSERT INTO DBVESTIB.TIPO_INFORMACAO(COD_TIPO_INFORMACAO,DSC_TIPO_INFORMACAO)
+VALUES ( DBVESTIB.TIPO_INFORMACAO_S.NEXTVAL, 'Informação Indicação Agente');
+commit;
+
+select DBVESTIB.TIPO_INFORMACAO_S.NEXTVAL from dual;
+
+INSERT INTO DBVESTIB.INFORMACAO_CONCURSO(COD_INFORMACAO,CODCONC,COD_TIPO_INFORMACAO,TIT_INFORMACAO,ORD_INFORMACAO,DSC_INFORMACAO)
+VALUES(DBVESTIB.INFORMACAO_CONCURSO_S.NEXTVAL,'3393', 160, 'Informação de indicação de Agente',1, 'Esta informação é cadastrada no Vestib.');
+commit;
+
+INSERT INTO DBVESTIB.INFORMACAO_CONCURSO(COD_INFORMACAO,CODCONC,COD_TIPO_INFORMACAO,TIT_INFORMACAO,ORD_INFORMACAO,DSC_INFORMACAO)
+VALUES(DBVESTIB.INFORMACAO_CONCURSO_S.NEXTVAL,'3393', 160, 'Preenchimento dos campos de indicação de Agente',2, 'Favor preecher um dos campos para indicação do agente.');
+commit;
+
+alter table DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM rename column HOR_INICO  to HOR_INICIO;
+
+--ALTER TABLE DBSIAF.TIPO_CONCURSO_ANO_SEMESTRE  MOVE TABLESPACE TS_DATA_DBSIAF;
+--ALTER TABLE DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM  MOVE TABLESPACE TS_DATA_DBSIAF;
+alter table DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM
+  add constraint HOR_TPO_CONCURSO_ANO_SEM_UK unique (COD_TIPO_CONCURSO_ANO_SEMESTRE, HOR_INICIO, HOR_FIM) USING INDEX TABLESPACE TS_INDX_DBSIAF;
+
+alter table DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM
+  add constraint HOR_TPO_CONCURSO_ANO_SEM_FK foreign key (COD_TIPO_CONCURSO_ANO_SEMESTRE)
+  references dbsiaf.tipo_concurso_ano_semestre (COD_TIPO_CONCURSO_ANO_SEMESTRE) on delete cascade;
+  
+ alter table DBSIAF.TIPO_CONCURSO_ANO_SEMESTRE
+  modify constraint TIPO_CONCURSO_ANO_SEMESTRE_PK /*primary key (COD_TIPO_CONCURSO_ANO_SEMESTRE)*/USING INDEX TABLESPACE TS_INDX_DBSIAF;
+    
+    
+  alter table DBSIAF.TIPO_CONCURSO_ANO_SEMESTRE
+  drop constraint TIPO_CONCURSO_ANO_SEMESTRE_PK;
+  
+alter table DBSIAF.PROCESSO_TPO_CONCURSO_ANO_SEM add EMAIL_NOTIFICACAO varchar2(200);
+alter table DBSIAF.PROCESSO_TPO_CONCURSO_ANO_SEM add TITULO_EMAIL varchar2(100);
+alter table DBSIAF.PROCESSO_TPO_CONCURSO_ANO_SEM add REMETENTE_EMAIL varchar2(100);
+
+BEGIN
+DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'HORARIO_TPO_CONCURSO_ANO_SEM', 'HORARIO_TPO_CONC_ANO_SEM','N');
+DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'PROCESSO_TPO_CONCURSO_ANO_SEM', 'PROCESSO_TPO_CONC_ANO_SEM','N');
+END;
+
+
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 6017, 'Horário Padrão',2, 'frmHorarioPadrao', 1, 'N', 1); 
+commit;
+/*
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 6017, 'Criar/Excluir Horários',3, 'frmHorarioAgentes', 1, 'N', 1); 
+commit;
+
+
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 6017, 'Associar Agentes',4, 'frmAssociaEstrutura', 1, 'N', 1); 
+commit;*/
+
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6022);  -- Item de menu   
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6022);  -- Item de menu   
+commit;
+
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6023);  -- Item de menu   
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6023);  -- Item de menu   
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6024);  -- Item de menu   
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6024);  -- Item de menu   
+commit;
+
+select * from  dbadm.item_menu i
+where i.cod_item_menu_pai = 6017 for update
+
+
+CREATE SEQUENCE  DBSIAF.CONCURSO_ANO_SEMESTRE_S
+MINVALUE 1
+MAXVALUE 9999999999
+START WITH 1
+INCREMENT BY 1;
+
+CREATE  TABLE DBSIAF.CONCURSO_ANO_SEMESTRE
+( 
+  COD_CONCURSO_ANO_SEMESTRE     NUMBER(10)   NOT NULL,
+  COD_TIPO_CONCURSO_ANO_SEMESTRE  NUMBER(10)   NOT NULL,
+  CODCONC                            VARCHAR2(10)   NOT NULL 
+)TABLESPACE TS_DATA_DBSIAF; 
+
+
+ALTER TABLE DBSIAF.CONCURSO_ANO_SEMESTRE ADD CONSTRAINT CONCURSO_ANO_SEMESTRE_PK PRIMARY KEY (COD_CONCURSO_ANO_SEMESTRE)USING INDEX TABLESPACE TS_INDX_DBSIAF;
+ALTER TABLE DBSIAF.CONCURSO_ANO_SEMESTRE ADD CONSTRAINT CONCURSO_ANO_SEMESTRE_FK FOREIGN KEY (CODCONC) REFERENCES DBVESTIB.CONCURSO(CODCONC);
+ALTER TABLE DBSIAF.CONCURSO_ANO_SEMESTRE ADD CONSTRAINT CONCURSO_ANO_SEMESTRE_FK2 FOREIGN KEY (COD_TIPO_CONCURSO_ANO_SEMESTRE) REFERENCES DBSIAF.TIPO_CONCURSO_ANO_SEMESTRE(COD_TIPO_CONCURSO_ANO_SEMESTRE);
+
+CREATE  SEQUENCE DBSIAF.horario_concurso_ano_sem_s
+MINVALUE 1
+MAXVALUE 9999999999
+START WITH 1
+INCREMENT BY 1;
+
+CREATE  TABLE DBSIAF.HORARIO_CONCURSO_ANO_SEM
+( 
+  COD_HORARIO_CONCURSO_ANO_SEM    NUMBER(10)   NOT NULL,  
+  COD_CONCURSO_ANO_SEMESTRE   NUMBER(10)   NOT NULL,  
+   HOR_INICO                        DATE,
+  HOR_FIM                          DATE
+)TABLESPACE TS_DATA_DBSIAF; 
+
+ALTER TABLE DBSIAF.horario_concurso_ano_sem ADD CONSTRAINT COD_horario_conc_ano_sem_pk PRIMARY KEY (COD_horario_concurso_ano_sem)USING INDEX TABLESPACE TS_INDX_DBSIAF;
+ALTER TABLE DBSIAF.horario_concurso_ano_sem ADD CONSTRAINT COD_horario_conc_ano_sem_FK FOREIGN KEY (COD_CONCURSO_ANO_SEMESTRE) REFERENCES DBSIAF.CONCURSO_ANO_SEMESTRE(COD_CONCURSO_ANO_SEMESTRE) ;
+cREATE UNIQUE INDEX DBSIAF.IX_horario_concurso_ano_sem on DBSIAF.horario_concurso_ano_sem( COD_CONCURSO_ANO_SEMESTRE,HOR_INICO, HOR_FIM) TABLESPACE TS_INDX_DBSIAF;

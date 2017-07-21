@@ -1,0 +1,1 @@
+dbadm.pc_usuario.SP_ALTERA_STATUS_USUARIO(P_NOME_USUARIO, 'UNLOCK') 

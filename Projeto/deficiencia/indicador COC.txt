@@ -1,0 +1,7 @@
+
+
+-- Add/modify columns 
+alter table dbsiaf.INSTITUICAO_EXTERNA add IND_MEC char(1);
+
+
+alter table dbsiaf.INSTITUICAO_EXTERNA_log add IND_MEC char(1);

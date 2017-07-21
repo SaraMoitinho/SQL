@@ -1,0 +1,32 @@
+ANO   SEMESTRE TIPO CONC
+2016  2     	vESTIBULAR ead
+
+
+
+GRIDS
+
+hORARIOS
+
+
+HORA INICIAL HORA FINAL
+12:00        14:00
+17:00		 18:00 
+
+19:00
+
+CONFIGURACAO
+
+Prazo min pra marca:
+Prazo nao sei o uqe:
+Escolhe local:
+
+
+
+
+replica(agente, conc)
+
+disponibilidade:
+data_hora_inicial:
+Data prova do concurso || hora inicial pardcao
+data_hora_final:
+Data prova do concurso || hora final pardcao

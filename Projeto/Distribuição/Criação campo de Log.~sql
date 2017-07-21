@@ -1,0 +1,34 @@
+-- Create table
+create table DBVESTIB.CADERNOSALA_LOG
+(
+  CODCONC          VARCHAR2(10),
+  CODCAD           CHAR(2),
+  CODLOC           CHAR(2),
+  CODSAL           CHAR(10),
+  CODINSTITUICAO   NUMBER(10),
+  CODCUR           CHAR(2),
+  COD_USUARIO_LOG  NUMBER(10) not null,
+  DAT_OPERACAO_LOG DATE not null,
+  IDT_OPERACAO_LOG CHAR(1) not null,
+  CODCAM           CHAR(2),
+  CODTUR           VARCHAR2(10)
+)
+tablespace TS_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate check constraints 
+alter table DBVESTIB.CADERNOSALA_LOG
+  add constraint CK_CADERNOSALA_LOG
+  check (IDT_OPERACAO_LOG in ('I', 'U', 'D', 'S'));
+-- Grant/Revoke object privileges 
+grant select, insert on DBVESTIB.CADERNOSALA_LOG to USER_DBVESTIB;
+grant select, insert on DBVESTIB.CADERNOSALA_LOG to USER_DBVESTIBWEB;
+grant select, insert on DBVESTIB.CADERNOSALA_LOG to USER_SIAF;

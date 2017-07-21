@@ -1,0 +1,377 @@
+SELECT TAB.*,
+       'S' IND_FILTRO,
+       DECODE(TAB.TITULO_SPC, 'Sim', 'S', 'N') IND_SPC,
+       TRUNC(SYSDATE) DATA_ATUAL
+  FROM (SELECT ALU.COD_ALUNO,
+               ALU.NUM_MATRICULA,
+               ALU.NOM_ALUNO,
+               ALU.NUM_CPF,
+               ALU.COD_PESSOA,
+               ALU.COD_STA_ALUNO,
+               SAL.DSC_STA_ALUNO,
+               TRE.COD_TITULO_RECEBER,
+               TRE.NUM_TITULO,
+               TRE.NUM_NOSSO_NUMERO,
+               CUR.NOM_CURSO,
+               CAM.NOM_CAMPUS,
+               TUR.DSC_TURNO,
+               NVL((SELECT TDO.COD_TITULO_ORIGEM
+                     FROM DBSIAF.TITULO_ORIGEM_DESTINO TDO
+                    WHERE TDO.COD_TITULO_DESTINO = TRE.COD_TITULO_RECEBER
+                      AND NVL(TCO.NUM_PARCELA, 0) <= NVL(TCP.NUM_PARCELA, 0)),
+                   TRE.COD_TITULO_RECEBER) COD_TITULO_ORIGEM,
+               TRE.DSC_MODALIDADE,
+               TRE.DSC_SITUACAO_TITULO,
+               TRE.DSC_LOCAL_PAGAMENTO,
+               TRE.NUM_PARCELA,
+               TRE.NUM_CREDITO,
+               TRE.DAT_GERACAO,
+               TRE.DAT_VENCIMENTO,
+               TRE.DAT_PRORROGACAO,
+               TRE.DAT_VALIDADE,
+               TRE.DAT_PAGAMENTO,
+               TRE.DAT_BAIXA,
+               TRE.DAT_CANCELAMENTO,
+               TRE.VAL_TITULO,
+               TRE.VAL_CALC_TITULO,
+               TRE.VAL_PAGO,
+               case
+                 when tre.cod_sta_titulo in (3, 6, 10) then
+                  DECODE(TRE.IND_BAIXA, 'M', 'Manual', 'A', 'Automática')
+                 else
+                  ''
+               end IND_BAIXA,
+               TRE.VAL_JUROS,
+               TRE.VAL_MORA,
+               TRE.VAL_MULTA,
+               TRE.VAL_DESCONTO,
+               TRE.VAL_ABATIMENTO,
+               TRE.VAL_PERCENTUAL_EAD,
+               TRE.VAL_PERCENTUAL_ANIMA,
+               TRE.VAL_PERCENTUAL_SERVICO,
+               TRE.VAL_PERCENTUAL_PRODUTO,
+               TRE.VAL_PAGO_EAD,
+               TRE.VAL_PAGO_ANIMA,
+               DECODE(DBSIAF.F_BUSCA_PROCESSO_JUDICIAL(ALU.COD_ALUNO,
+                                                       'S',
+                                                       'N'),
+                      NULL,
+                      'Não',
+                      'Sim') as PROCESSO_JUDICIAL,
+               (SELECT SSP.DSC_SIT_TITULO_SPC
+                  FROM DBSIAF.TITULO_SPC TSP
+                 INNER JOIN DBSIAF.SITUACAO_TITULO_SPC SSP
+                    ON (SSP.COD_SIT_TITULO_SPC = TSP.COD_SIT_TITULO_SPC)
+                 WHERE TSP.COD_TITULO_RECEBER = TRE.COD_TITULO_RECEBER
+                   AND TSP.DAT_CADASTRO =
+                       (SELECT MAX(TS1.DAT_cADASTRO)
+                          FROM DBSIAF.TITULO_SPC TS1
+                         WHERE TS1.COD_TITULO_RECEBER = TRE.COD_TITULO_RECEBER)) AS SIT_TITULO_SPC,
+               TCO.DSC_TPO_CONTRATO,
+               DECODE(ASS.IND_LIBERADO,
+                      'S',
+                      'Sim',
+                      'N',
+                      'Não',
+                      'C',
+                      'Cancelado',
+                      'A',
+                      'Em análise') IND_LIBERADO,
+               DECODE(TCO.IND_TPO_CONTRATO,
+                      'C',
+                      'Crédito',
+                      'V',
+                      'Valor',
+                      'H',
+                      'Hora Aula',
+                      'E',
+                      'Evento') IND_TPO_CONTRATO,
+               TCO.NUM_CREDITO NUM_CRED_CTR,
+               TCO.NUM_MINIMO_CREDITO,
+               TCO.NUM_PARCELA NUM_PARCELA_CTR,
+               TCP.NUM_PARCELA NUM_PARCELA_PARC,
+               DECODE(TCP.VAL_CREDITO,
+                      NULL,
+                      TCO.VAL_CREDITO,
+                      TCP.VAL_CREDITO) VAL_CREDITO,
+               TCO.VAL_SEMESTRALIDADE,
+               DECODE(TCP.VAL_ANUIDADE,
+                      NULL,
+                      TCO.VAL_ANUIDADE,
+                      TCP.VAL_ANUIDADE) VAL_ANUIDADE,
+               TCP.DSC_FOR_PAGAMENTO,
+               TCP.DSC_FOR_PARCELAMENTO,
+               PLE.COD_PERIODO_LETIVO,
+               PLE.SGL_PERIODO_LETIVO,
+               CASE
+                 WHEN TRUNC(TRE.DAT_PRORROGACAO) < TRUNC(SYSDATE) AND
+                      TRE.COD_STA_TITULO = 1 AND TRE.IND_FINANCEIRO = 'S' THEN
+                  'S'
+                 ELSE
+                  'N'
+               END IND_ABERTO_VENCIDO,
+               CASE
+                 WHEN TRE.IND_FINANCEIRO = 'S' AND
+                      TRE.COD_TPO_TITULO NOT IN (6, 9) AND
+                      TRE.IND_ACORDO = 'N' THEN
+                  'S'
+                 ELSE
+                  'N'
+               END IND_FINANCEIRO,
+               CASE
+                 WHEN TRE.IND_CONTABILIDADE = 'S' AND
+                      TRE.COD_TPO_TITULO NOT IN (6, 9) AND
+                      TRE.IND_ACORDO = 'N' THEN
+                  'S'
+                 ELSE
+                  'N'
+               END IND_CONTABILIDADE,
+               CASE
+                 WHEN TRE.IND_ACORDO = 'S' AND TRE.COD_TPO_TITULO <> 6 THEN
+                  'S'
+                 ELSE
+                  'N'
+               END IND_ACORDO,
+               CASE
+                 WHEN TRE.COD_TPO_TITULO = 6 THEN
+                  'S'
+                 ELSE
+                  'N'
+               END IND_AVULSO,
+               CASE
+                 WHEN TRE.COD_TPO_TITULO = 9 THEN
+                  'S'
+                 ELSE
+                  'N'
+               END IND_AGRUPADO,
+               DECODE(TRE.COD_STA_TITULO, 1, 'S', 'N') IND_ABERTO,
+               DECODE(TRE.COD_STA_TITULO, 3, 'S', 'N') IND_PAGO_PARCIAL,
+               DECODE(TRE.COD_STA_TITULO, 6, 'S', 'N') IND_BAIXADO,
+               DECODE(TRE.COD_STA_TITULO, 10, 'S', 'N') IND_EMACORDO,
+               DECODE(TRE.COD_STA_TITULO, 4, 'S', 'N') IND_CANCELADO,
+               SUBSTR(DBSIAF.PC_COBRANCA.F_TITULO_COBRANCA(TRE.COD_TITULO_RECEBER),
+                      1,
+                      1) IND_COBRANCA,
+               DECODE(PC_ACORDO_FINANCEIRO.F_ORIGEM_ACORDO(TRE.COD_TITULO_RECEBER),
+                      'S',
+                      'Sim',
+                      'N',
+                      'Não') IND_ORIGEM_ACORDO,
+               
+               (SELECT SC.DSC_STA_COBRANCA || '  -  ' || FO.NOM_FORNECEDOR
+                  FROM COBRANCA_TIT_RECEBER CTR,
+                       STATUS_COBRANCA      SC,
+                       REMESSA_COBRANCA     RC,
+                       FORNECEDOR           FO
+                 WHERE CTR.COD_TITULO_RECEBER = TRE.COD_TITULO_RECEBER
+                   AND SC.COD_STA_COBRANCA = CTR.COD_STA_COBRANCA
+                   AND RC.COD_REMESSA_COB = CTR.COD_REMESSA_COB
+                   AND FO.COD_FORNECEDOR = RC.COD_FORNECEDOR
+                   AND CTR.COD_COB_TIT_RECEBER =
+                       (SELECT MAX(CTR1.COD_COB_TIT_RECEBER)
+                          FROM DBSIAF.COBRANCA_TIT_RECEBER CTR1
+                         WHERE CTR1.COD_TITULO_RECEBER =
+                               CTR.COD_TITULO_RECEBER)) DSC_COBRANCA,
+               DECODE(PC_ACORDO_FINANCEIRO.F_DESTINO_ACORDO(TRE.COD_TITULO_RECEBER),
+                      'S',
+                      'Sim',
+                      'N',
+                      'Não') IND_DESTINO_ACORDO,
+               nvl((SELECT RES.NOM_RESPONSAVEL
+                     FROM DBSIAF.RESPONSAVEL RES
+                    WHERE RES.COD_RESPONSAVEL = TRE.COD_RESPONSAVEL),
+                   'Próprio Aluno') NOM_RESPONSAVEL,
+               DECODE(DBSIAF.PC_SITUACAO_FINANCEIRA.F_TITULO_SPC(TRE.COD_TITULO_RECEBER,
+                                                                 1,
+                                                                 1),
+                      NULL,
+                      'Não',
+                      'Sim') TITULO_SPC,
+               DBSIAF.PC_ACORDO_FINANCEIRO.F_CODIGO_ACORDO(TRE.COD_TITULO_RECEBER,
+                                                           TRE.COD_STA_TITULO) COD_ACORDO,
+               TRE.IDT_STA_TITULO,
+               TRE.DSC_STA_TITULO,
+               TRE.DSC_TPO_TITULO,
+               TRE.DSC_SIT_RETORNO,
+               TRE.COD_ASS_CONTRATO
+          FROM (SELECT TRE.COD_TITULO_RECEBER,
+                       TRE.COD_MODALIDADE,
+                       TRE.COD_STA_TITULO,
+                       TRE.COD_TPO_TITULO,
+                       TRE.NUM_TITULO,
+                       TRE.NUM_NOSSO_NUMERO,
+                       TRE.NUM_PARCELA,
+                       TRE.NUM_CREDITO,
+                       TRE.DAT_GERACAO,
+                       TRE.DAT_VENCIMENTO,
+                       TRE.DAT_PRORROGACAO,
+                       TRE.DAT_VALIDADE,
+                       TRE.IND_BAIXA,
+                       TRE.DAT_PAGAMENTO,
+                       TRE.DAT_BAIXA,
+                       TRE.DAT_CANCELAMENTO,
+                       TRE.COD_RESPONSAVEL,
+                       TRE.COD_SITUACAO_TITULO,
+                       TRE.COD_LOC_PAGAMENTO,
+                       TRE.COD_ALUNO,
+                       TRE.COD_ASS_CONTRATO,
+                       TRE.VAL_JUROS,
+                       TRE.VAL_MORA,
+                       TRE.VAL_MULTA,
+                       TRE.VAL_DESCONTO,
+                       TRE.VAL_ABATIMENTO,
+                       TRE.VAL_TITULO,
+                       TRE.VAL_PAGO,
+                       TRE.VAL_PAGO_EAD,
+                       TRE.VAL_PAGO_ANIMA,
+                       TRE.VAL_CALC_TITULO,
+                       TRE.VAL_PERCENTUAL_EAD,
+                       TRE.VAL_PERCENTUAL_ANIMA,
+                       TRE.VAL_PERCENTUAL_SERVICO,
+                       TRE.VAL_PERCENTUAL_PRODUTO,
+                       TTI.DSC_TPO_TITULO,
+                       TTI.IND_FINANCEIRO,
+                       TTI.IND_CONTABILIDADE,
+                       TTI.IND_ACORDO,
+                       TTI.IND_AGRUPADO,
+                       MCO.DSC_MODALIDADE,
+                       STI.DSC_SITUACAO_TITULO,
+                       STT.DSC_STA_TITULO,
+                       STT.IDT_STA_TITULO,
+                       LPA.DSC_LOCAL_PAGAMENTO,
+                       SRE.DSC_SIT_RETORNO
+                  FROM DBSIAF.TITULO_RECEBER TRE
+                 INNER JOIN DBSIAF.MOD_COBRANCA MCO
+                    ON MCO.COD_MODALIDADE = TRE.COD_MODALIDADE
+                 INNER JOIN DBSIAF.SITUACAO_TITULO STI
+                    ON STI.COD_SITUACAO_TITULO = TRE.COD_SITUACAO_TITULO
+                 INNER JOIN DBSIAF.TIPO_TITULO TTI
+                    ON TRE.COD_TPO_TITULO = TTI.COD_TPO_TITULO
+                 INNER JOIN DBSIAF.STATUS_TITULO STT
+                    ON STT.COD_STA_TITULO = TRE.COD_STA_TITULO
+                  LEFT JOIN DBSIAF.LOCAL_PAGAMENTO LPA
+                    ON LPA.COD_LOC_PAGAMENTO = TRE.COD_LOC_PAGAMENTO
+                  LEFT JOIN DBSIAF.SITUACAO_RETORNO SRE
+                    ON SRE.COD_SIT_RETORNO = TRE.COD_SIT_RETORNO
+                 WHERE NOT EXISTS
+                 (SELECT 1
+                          FROM DBSIAF.TITULO_ALUNO TAL
+                         WHERE TAL.COD_TITULO_RECEBER = TRE.COD_TITULO_RECEBER)
+                UNION
+                SELECT TRE.COD_TITULO_RECEBER,
+                       TRE.COD_MODALIDADE,
+                       TRE.COD_STA_TITULO,
+                       TRE.COD_TPO_TITULO,
+                       TRE.NUM_TITULO,
+                       TRE.NUM_NOSSO_NUMERO,
+                       TRE2.NUM_PARCELA,
+                       TRE.NUM_CREDITO,
+                       TRE.DAT_GERACAO,
+                       TRE.DAT_VENCIMENTO,
+                       TRE.DAT_PRORROGACAO,
+                       TRE.DAT_VALIDADE,
+                       TRE.IND_BAIXA,
+                       TRE.DAT_PAGAMENTO,
+                       TRE.DAT_BAIXA,
+                       TRE.DAT_CANCELAMENTO,
+                       TRE.COD_RESPONSAVEL,
+                       TRE.COD_SITUACAO_TITULO,
+                       TRE.COD_LOC_PAGAMENTO,
+                       TRE2.COD_ALUNO,
+                       TRE2.COD_ASS_CONTRATO,
+                       TRE.VAL_JUROS,
+                       TRE.VAL_MORA,
+                       TRE.VAL_MULTA,
+                       TRE.VAL_DESCONTO,
+                       TRE.VAL_ABATIMENTO,
+                       TRE.VAL_TITULO,
+                       TRE.VAL_PAGO,
+                       TRE.VAL_PAGO_EAD,
+                       TRE.VAL_PAGO_ANIMA,
+                       TRE.VAL_CALC_TITULO,
+                       TRE.VAL_PERCENTUAL_EAD,
+                       TRE.VAL_PERCENTUAL_ANIMA,
+                       TRE.VAL_PERCENTUAL_SERVICO,
+                       TRE.VAL_PERCENTUAL_PRODUTO,
+                       TTI.DSC_TPO_TITULO,
+                       TTI.IND_FINANCEIRO,
+                       TTI.IND_CONTABILIDADE,
+                       TTI.IND_ACORDO,
+                       TTI.IND_AGRUPADO,
+                       MCO.DSC_MODALIDADE,
+                       STI.DSC_SITUACAO_TITULO,
+                       STT.DSC_STA_TITULO,
+                       STT.IDT_STA_TITULO,
+                       LPA.DSC_LOCAL_PAGAMENTO,
+                       SRE.DSC_SIT_RETORNO
+                  FROM DBSIAF.TITULO_RECEBER TRE
+                 INNER JOIN DBSIAF.TITULO_ALUNO TAL
+                    ON TRE.COD_TITULO_RECEBER = TAL.COD_TITULO_RECEBER
+                 INNER JOIN DBSIAF.TITULO_ORIGEM_DESTINO TOD
+                    ON TOD.COD_TITULO_DESTINO = TRE.COD_TITULO_RECEBER
+                 INNER JOIN DBSIAF.TITULO_RECEBER TRE2
+                    ON TRE2.COD_TITULO_RECEBER = TOD.COD_TITULO_ORIGEM
+                   and tal.cod_aluno = tre2.cod_aluno
+                 INNER JOIN DBSIAF.MOD_COBRANCA MCO
+                    ON MCO.COD_MODALIDADE = TRE.COD_MODALIDADE
+                 INNER JOIN DBSIAF.SITUACAO_TITULO STI
+                    ON STI.COD_SITUACAO_TITULO = TRE.COD_SITUACAO_TITULO
+                 INNER JOIN DBSIAF.TIPO_TITULO TTI
+                    ON TRE.COD_TPO_TITULO = TTI.COD_TPO_TITULO
+                 INNER JOIN DBSIAF.STATUS_TITULO STT
+                    ON STT.COD_STA_TITULO = TRE.COD_STA_TITULO
+                  LEFT JOIN DBSIAF.LOCAL_PAGAMENTO LPA
+                    ON LPA.COD_LOC_PAGAMENTO = TRE.COD_LOC_PAGAMENTO
+                  LEFT JOIN DBSIAF.SITUACAO_RETORNO SRE
+                    ON SRE.COD_SIT_RETORNO = TRE.COD_SIT_RETORNO) TRE
+         INNER JOIN DBSIAF.ASS_CONTRATO ASS
+            ON TRE.COD_ASS_CONTRATO = ASS.COD_ASS_CONTRATO
+          LEFT JOIN (SELECT ASS1.COD_ASS_CONTRATO,
+                           TCP.VAL_CREDITO,
+                           TCP.VAL_ANUIDADE,
+                           FPA.DSC_FOR_PAGAMENTO,
+                           FPC.DSC_FOR_PARCELAMENTO,
+                           FPC.NUM_PARCELA
+                      FROM DBSIAF.ASS_CONTRATO ASS1
+                     INNER JOIN TIPO_CONTRATO_PAGAMENTO TCP
+                        ON ASS1.COD_CTR_PAGAMENTO = TCP.COD_CTR_PAGAMENTO
+                     INNER JOIN DBSIAF.FORMA_PAGAMENTO FPA
+                        ON FPA.COD_FOR_PAGAMENTO = TCP.COD_FOR_PAGAMENTO
+                     INNER JOIN DBSIAF.FORMA_PARCELAMENTO FPC
+                        ON FPC.COD_FOR_PARCELAMENTO =
+                           TCP.COD_FOR_PARCELAMENTO
+                    
+                    ) TCP
+            ON (TCP.COD_ASS_CONTRATO = ASS.COD_ASS_CONTRATO)
+         INNER JOIN DBSIAF.ALUNO ALU
+            ON ASS.COD_ALUNO = ALU.COD_ALUNO
+         INNER JOIN DBSIAF.CAMPUS CAM
+            ON CAM.COD_CAMPUS = ALU.COD_CAMPUS
+         INNER JOIN DBSIAF.TIPO_CONTRATO TCO
+            ON ASS.COD_TPO_CONTRATO = TCO.COD_TPO_CONTRATO
+         INNER JOIN DBSIAF.PERIODO_LETIVO PLE
+            ON TCO.COD_PERIODO_LETIVO = PLE.COD_PERIODO_LETIVO
+         INNER JOIN DBSIAF.STATUS_ALUNO SAL
+            ON SAL.COD_STA_ALUNO = ALU.COD_STA_ALUNO
+         INNER JOIN DBSIAF.CURSO CUR
+            ON CUR.COD_CURSO = ALU.COD_CURSO
+         INNER JOIN DBSIAF.NIVEL_CURSO NCU
+            ON CUR.COD_NIV_CURSO = NCU.COD_NIV_CURSO
+         INNER JOIN DBSIAF.TURNO TUR
+            ON TUR.COD_TURNO = ALU.COD_TURNO
+         WHERE ASS.IND_LIBERADO <> 'C'
+           AND CAM.COD_INSTITUICAO = :P_COD_INSTITUICAO
+           AND TRE.COD_ALUNO = NVL(:P_COD_ALUNO, TRE.COD_ALUNO)
+           AND TRE.COD_TPO_TITULO <> 15
+           AND nvl(ALU.COD_PESSOA,-999) = NVL(:P_COD_PESSOA, nvl(ALU.COD_PESSOA,-999))
+           AND PLE.COD_PERIODO_LETIVO =
+               NVL(:P_COD_PERIODO_LETIVO, PLE.COD_PERIODO_LETIVO)
+           AND ((:P_COD_RESPONSAVEL IS NULL) OR
+               (:P_COD_RESPONSAVEL = 0 AND TRE.COD_RESPONSAVEL IS NULL) OR
+               (TRE.COD_RESPONSAVEL = :P_COD_RESPONSAVEL AND
+               :P_COD_RESPONSAVEL IS NOT NULL))) TAB
+ WHERE 1 = 1
+ ORDER BY TAB.SGL_PERIODO_LETIVO DESC,
+          TAB.NUM_PARCELA,
+          TAB.DSC_TPO_TITULO     ASC
+

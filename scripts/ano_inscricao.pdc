@@ -1,0 +1,8 @@
+-- Create table
+create table dbvestib.ano_enem
+(
+  COD_NUMINSENEM number(10),
+  ANO_ENEM       number(4),
+  NUMINSCENEM    number(15)
+)
+;

@@ -1,0 +1,5 @@
+update
+dbvestib.inscricao ins
+set ins.formapgto = 'B'
+where ins.codconc = '3123'
+and ins.codinsc = '724962';

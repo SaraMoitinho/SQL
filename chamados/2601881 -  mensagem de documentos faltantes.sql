@@ -1,0 +1,3 @@
+
+insert into DBADM.PERM_ACESSO_SISTEMA(COD_PERM_ACESSO_SISTEMA,COD_SISTEMA,COD_CNF_CONSULTA,DSC_TIT_PERM_ACESSO,NOM_PAGINA,NOM_PAGINA_DETALHES,DSC_INSTRUCOES,IND_OBRIGATORIO)
+values(DBADM.PERM_ACESSO_SISTEMA_s.NEXTVAL, 51,4407, 'Restrição de acesso por documentos faltantes USJT', null,'SOL_293.php','Comparecer com documentos pendentes ao CAA do seu Campus.', 'N')

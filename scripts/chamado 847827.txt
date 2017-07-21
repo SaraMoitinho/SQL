@@ -1,0 +1,20 @@
+
+   with  dtmConcurso.QryPerLetivo do
+    begin
+      Close;
+      open;
+
+       if  (dtmConcurso.QryPerLetivo.FieldByName('DAT_INI_PERIODO').AsString <> null) then
+       begin
+         with dtmConcurso.QryPeriodoLetivo do
+          begin
+            close;
+            open;
+
+            if (dtmConcurso.QryPeriodoLetivo.FieldByName('DAT_INI_PERIODO').AsString <> null) then
+              if (dtmConcurso.QryPeriodoLetivo.FieldByName('DAT_INI_PERIODO').AsString <
+                  dtmConcurso.QryPerLetivo.FieldByName('DAT_INI_PERIODO').AsString) then
+              showmessage('Período Letivo Inferior ao último período Letivo Ofertado !');
+         end;
+       end;
+     end;

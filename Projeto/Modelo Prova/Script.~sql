@@ -1,0 +1,2 @@
+-- Add/modify columns 
+alter table DBVESTIB.CONCURSO add MODELO_PROVA varchar2(100);

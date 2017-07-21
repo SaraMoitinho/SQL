@@ -1,0 +1,121 @@
+/*-- Create table
+create table dbvestib.instituicao_externa
+(
+  cod_instituicao               number(10) not null,
+  nom_instituicao               varchar2(300)not null,
+  cod_instituicao_vestib number(10) null,
+  cod_instituicao_siaf  number(10) null,
+  dat_operacao_log date
+)
+tablespace TS_DATA_DBVESTIB
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+  );
+
+BEGIN
+	DBLOG.PC_LOG.SP_CRIA_LOG('DBVESTIB',
+							 'INSTITUICAO_EXTERNA',
+							 'DBVESTIB',
+							 'INSTITUICAO_EXTERNA',
+							 'N');
+	DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBVESTIB',
+								 'INSTITUICAO_EXTERNA',
+								 'INSTITUICAO_EXTERNA',
+								 'N');
+END;
+
+GRANT SELECT, ALTER,insert, delete, update ON DBVESTIB.INSTITUICAO_EXTERNA TO user_DBVESTIB;
+GRANT SELECT, ALTER ON DBVESTIB.INSTITUICAO_EXTERNA_LOG TO USER_DBVESTIB;
+*/
+
+
+
+create table dbvestib.inscricao_inst_externa
+( codconc                       VARCHAR2(10) not null,                           
+  codinsc                       char(6) not null, 
+  COD_INSTIT_EXTERNA            NUMBER(10) not null, 
+  cod_usuario_log              NUMBER(10),
+  dat_operacao_log date
+)
+tablespace TS_DATA_DBVESTIB
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+  );
+
+
+
+BEGIN
+	DBLOG.PC_LOG.SP_CRIA_LOG('DBVESTIB',
+							 'inscricao_inst_externa',
+							 'DBVESTIB',
+							 'inscricao_inst_externa',
+							 'N');
+	DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBVESTIB',
+								 'inscricao_inst_externa',
+								 'inscricao_inst_externa',
+								 'N');
+END;
+
+
+GRANT SELECT, ALTER,insert, delete, update ON DBVESTIB.inscricao_inst_externa TO user_DBVESTIB;
+GRANT SELECT, ALTER ON DBVESTIB.inscricao_inst_externa_LOG TO USER_DBVESTIB;
+
+
+
+
+insert into dbvestib.passos_inscricao(cod_passo_inscricao,cod_tpo_concurso,end_tela,dsc_tela,ord_passo,cod_cnf_consulta,ind_exibir,dsc_funcao_before,dsc_funcao_after)
+values 
+(dbvestib.passos_inscricao_s.nextval,1,'instituicaoExterna/index/index', 'Instituição Externa', 7, null, 'S', 'instituicaoExterna.beforeNextStep', 'instituicaoExterna.afterLoadStep');
+commit;
+
+SELECT *
+FROM DBVESTIB.PASSOS_INSCRICAO PPP
+WHERE PPP.COD_TPO_CONCURSO = 1 for update
+
+
+SELECT *
+FROM DBVESTIB.INSCRICAO_DEFICIENCIA D, DBVESTIB.INSCRICAO INS
+WHERE D.CODCONC = '1940'
+AND D.CODCONC = INS.CODCONC
+AND D.CODINSC = INS.CODINSC
+AND INS.CPFCAN = '22651348805'
+select * from dbvestib.instituicao_externa;
+
+
+
+
+
+SELECT *
+/*	INS.COD_INSTIT_EXTERNA CODINSTITEXTERNA,
+	INS.NOM_INSTIT_EXTERNA NOMINSTITEXTERNA*/
+FROM
+	DBSIAF.INSTITUICAO_EXTERNA INS
+WHERE
+	 upper(INS.NOM_INSTIT_EXTERNA) LIKE upper(&NOMINSTITEXTERNA)||'%'
+     AND INS.COD_TPO_INSTITUICAO = 60
+ORDER BY 
+	INS.NOM_INSTIT_EXTERNA
+select * from    dbsiaf.tipo_instituicao
+    
+    
+    
+    select *
+    from dbvestib.script_passos_inscricao_log  o
+    where o.cod_passo_inscricao = 22  for update
+    and ((o.cod_tpo_concurso = 40) or (o.codconc = '1762')) for update
+    
+    
+    select * from dbvestib.passos_inscricao p
+    where p.cod_tpo_concurso = 40

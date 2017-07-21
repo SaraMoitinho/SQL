@@ -1,0 +1,69 @@
+BEGIN
+ 
+  DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'ESTRUTURA_ORGANIZACIONAL', null,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'ENDERECO_ESTRUTURA', null,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'ESTRUTURA_PESSOA',NULL,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'ESTRUTURA_CIDADE',NULL,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'ESTRUTURA_CAMPUS_VESTIB',NULL,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'ESTRUTURA_TIPO_CONCURSO',NULL,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'ESTRUTURA_CONCURSO',NULL,'N');
+
+  DBLOG.PC_LOG.SP_ATUALIZA_LOG('DBSIAF', 'TIPO_CONCURSO_ANO_SEMESTRE','TIPO_CONCURSO_ANO_SEM','N');
+
+  DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'HORARIO_TPO_CONCURSO_ANO_SEM', 'HORARIO_TPO_CONC_ANO_SEM','N');
+
+  DBLOG.PC_LOG.SP_atualiza_LOG('DBVESTIB', 'INSCRICAO_ESTRUTURA',null,'N');
+
+  DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'ALUNO_ESTRUTURA_ORGANIZACIONAL','ALUNO_ESTRUTURA_ORG','N');
+  
+  DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'PROCESSO_TPO_CONCURSO_ANO_SEM','PROCESSO_ANO_SEM','N');
+  
+ -- SELECT dbsiaf.estrutura_organizacional_s.NEXTVAL FROM dual;
+ -- ALTER SEQUENCE dbsiaf.estrutura_organizacional_s INCREMENT BY 1;
+
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 3936, 'Agentes', 57, null, 1, 'N', 1); 
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6017);  -- Item de menu   
+commit;
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6017);  -- Item de menu   
+commit;
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 6017, 'Cadastro', 1, 'frmAgente', 1, 'N', 1); 
+commit;
+       insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6018);  -- Item de menu   
+commit;
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6018);  -- Item de menu   
+commit;
+/*
+select * from DBADM.ITEM_MENU i
+where i.cod_sistema = 41
+and i.cod_item_menu_pai = 3936;
+*/
+insert into dbsiaf.tipo_estrutura_organizacional(cod_tpo_estrutura,nom_tpo_estrutura)
+values (dbsiaf.tipo_estrutura_s.nextval, 'Agente');
+commit;
+insert into dbsiaf.tipo_estrutura_organizacional(cod_tpo_estrutura,nom_tpo_estrutura)
+values (dbsiaf.tipo_estrutura_s.nextval, 'Pólo');
+commit;
+insert into dbsiaf.tipo_estrutura_organizacional(cod_tpo_estrutura,nom_tpo_estrutura)
+values (dbsiaf.tipo_estrutura_s.nextval, 'Centro de Apoio');
+commit;
+insert into dbsiaf.tipo_estrutura_organizacional(cod_tpo_estrutura,nom_tpo_estrutura)
+values (dbsiaf.tipo_estrutura_s.nextval, 'Empresa Contratante');
+commit;
+insert into dbvestib.tipo_informacao(cod_tipo_informacao,dsc_tipo_informacao)
+values (160, 'Informação para Agente');
+commit;
+end;

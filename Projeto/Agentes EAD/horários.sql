@@ -1,0 +1,96 @@
+CREATE SEQUENCE  DBSIAF.CONCURSO_ANO_SEMESTRE_S
+MINVALUE 1
+MAXVALUE 9999999999
+START WITH 1
+INCREMENT BY 1;
+
+CREATE  TABLE DBSIAF.CONCURSO_ANO_SEMESTRE
+( 
+  COD_CONCURSO_ANO_SEMESTRE     NUMBER(10)   NOT NULL,
+  COD_TIPO_CONCURSO_ANO_SEMESTRE  NUMBER(10)   NOT NULL,
+  CODCONC                            VARCHAR2(10)   NOT NULL 
+)TABLESPACE TS_DATA_DBSIAF; 
+
+
+ALTER TABLE DBSIAF.CONCURSO_ANO_SEMESTRE ADD CONSTRAINT CONCURSO_ANO_SEMESTRE_PK PRIMARY KEY (COD_CONCURSO_ANO_SEMESTRE)USING INDEX TABLESPACE TS_INDX_DBSIAF;
+ALTER TABLE DBSIAF.CONCURSO_ANO_SEMESTRE ADD CONSTRAINT CONCURSO_ANO_SEMESTRE_FK FOREIGN KEY (CODCONC) REFERENCES DBVESTIB.CONCURSO(CODCONC);
+ALTER TABLE DBSIAF.CONCURSO_ANO_SEMESTRE ADD CONSTRAINT CONCURSO_ANO_SEMESTRE_FK2 FOREIGN KEY (COD_TIPO_CONCURSO_ANO_SEMESTRE) REFERENCES DBSIAF.TIPO_CONCURSO_ANO_SEMESTRE(COD_TIPO_CONCURSO_ANO_SEMESTRE);
+
+CREATE  SEQUENCE DBSIAF.HORARIO_CONCURSO_ANO_SEM_S
+MINVALUE 1
+MAXVALUE 9999999999
+START WITH 1
+INCREMENT BY 1;
+
+CREATE  TABLE DBSIAF.HORARIO_CONCURSO_ANO_SEM
+( 
+  COD_HORARIO_CONCURSO_ANO_SEM    NUMBER(10)   NOT NULL,  
+  COD_CONCURSO_ANO_SEMESTRE   NUMBER(10)   NOT NULL,  
+  HOR_INICIO                        DATE   NOT NULL, 
+  HOR_FIM                          DATE    NOT NULL  
+)TABLESPACE TS_DATA_DBSIAF; 
+
+ALTER TABLE DBSIAF.HORARIO_CONCURSO_ANO_SEM ADD CONSTRAINT COD_HORARIO_CONC_ANO_SEM_PK PRIMARY KEY (COD_HORARIO_CONCURSO_ANO_SEM)USING INDEX TABLESPACE TS_INDX_DBSIAF;
+ALTER TABLE DBSIAF.HORARIO_CONCURSO_ANO_SEM ADD CONSTRAINT COD_HORARIO_CONC_ANO_SEM_FK FOREIGN KEY (COD_CONCURSO_ANO_SEMESTRE) REFERENCES DBSIAF.CONCURSO_ANO_SEMESTRE(COD_CONCURSO_ANO_SEMESTRE) ;
+CREATE UNIQUE INDEX DBSIAF.IX_HORARIO_CONCURSO_ANO_SEM ON DBSIAF.HORARIO_CONCURSO_ANO_SEM( COD_CONCURSO_ANO_SEMESTRE,HOR_INICIO, HOR_FIM) TABLESPACE TS_INDX_DBSIAF;
+
+alter table DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM rename column HOR_INICO  to HOR_INICIO;
+
+alter table DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM
+  add constraint HOR_TPO_CONCURSO_ANO_SEM_UK unique (COD_TIPO_CONCURSO_ANO_SEMESTRE, HOR_INICIO, HOR_FIM) USING INDEX TABLESPACE TS_INDX_DBSIAF;
+
+alter table DBSIAF.HORARIO_TPO_CONCURSO_ANO_SEM
+  add constraint HOR_TPO_CONCURSO_ANO_SEM_FK foreign key (COD_TIPO_CONCURSO_ANO_SEMESTRE)
+  references dbsiaf.tipo_concurso_ano_semestre (COD_TIPO_CONCURSO_ANO_SEMESTRE);
+  
+  
+alter table DBSIAF.PROCESSO_TPO_CONCURSO_ANO_SEM add EMAIL_NOTIFICACAO varchar2(200);
+alter table DBSIAF.PROCESSO_TPO_CONCURSO_ANO_SEM add TITULO_EMAIL varchar2(100);
+alter table DBSIAF.PROCESSO_TPO_CONCURSO_ANO_SEM add REMETENTE_EMAIL varchar2(100);
+
+alter table DBVESTIB.PARAMETROS_CONCURSO add IND_EXIBE_CARTEIRA char(1) default 'N';
+comment on column DBVESTIB.PARAMETROS_CONCURSO.IND_EXIBE_CARTEIRA  is 'Para que o passo Agente (apenas carteira) seja exibido';
+
+
+BEGIN
+DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'HORARIO_TPO_CONCURSO_ANO_SEM', 'HORARIO_TPO_CONC_ANO_SEM','N');
+DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'PROCESSO_TPO_CONCURSO_ANO_SEM', 'PROCESSO_TPO_CONC_ANO_SEM','N');
+DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'CONCURSO_ANO_SEMESTRE', 'CONCURSO_ANO_SEMESTRE','N');
+DBLOG.PC_LOG.SP_atualiza_LOG('DBSIAF', 'HORARIO_CONCURSO_ANO_SEM', 'HORARIO_CONCURSO_ANO_SEM','N');
+END;
+
+-- criar os menus no vestib desktop
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 6017, 'Horário Padrão',2, 'frmHorarioPadrao', 1, 'N', 1); 
+commit;
+
+insert into dbadm.item_menu(cod_item_menu, cod_sistema, cod_item_menu_pai, tit_item_menu, ord_item_menu, nom_item_menu, cod_tpo_item_menu, ind_separador, cod_sta_item_menu) 
+values (dbadm.item_menu_s.nextval, 41, 6017, 'Criar/Excluir Horários',3, 'frmHorarioAgentes', 1, 'N', 1); 
+commit;
+
+select * from  dbadm.item_menu i where i.cod_sistema= 41
+and i.cod_item_menu_pai= 6017
+
+-- é necessário verificar os itens de menu criado
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6028);  -- Item de menu   
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6028);  -- Item de menu   
+commit;
+
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (235, 6029);  -- Item de menu   
+commit;
+
+insert into dbadm.perm_grp_usuario (cod_grp_usuario, cod_item_menu) 
+values (2, 6029);  -- Item de menu   
+commit;
+
+
+
+--Compilar
+DBSIAF.PC_ESTRUTURA_ORGANIZACIONAL;
+DBSIAF.TAS_ESTRUTURA_PESSOA

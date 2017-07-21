@@ -1,0 +1,5 @@
+update
+dbsiaf.aluno alu
+set codconc = null,
+    codcan = null
+where alu.cod_aluno = 1201168;
